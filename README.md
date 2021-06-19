@@ -1,3 +1,3 @@
-# cfm
+# CloudFormation Templates
 
-CloudFormation templates for workshop and labs.
+这里主要放各种CloudFormation的模板文件。

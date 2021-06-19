@@ -1,7 +1,12 @@
-# vpc template for cloudformation
+# vpc 模板
 
-Name start with "vpc-with-c9" means deploy vpc and cloud9 web ide.
 
-Name start with "vpc-without-c9" means only deploy vpc, customer needs deploy ec2 client or cloud9 web ide manually.
 
+名字以 `vpc-with-c9` 开头的表示会部署VPC，以及一个 cloud9 的 web ide，这样可以直接当做客户端使用.
+
+
+名字以 `vpc-without-c9` 开头的表示仅部署VPC网络，读者需要自己去部署例如 EC2 当做客户端使用。
+
+
+此处我们仅以 CIDR 为 `10.0.0.0/16` 和 `10.1.0.0/16` 做参考，其他网段请自行按模板修改即可。
 
