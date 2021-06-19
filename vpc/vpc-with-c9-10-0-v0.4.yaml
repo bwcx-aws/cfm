@@ -1,36 +1,36 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "AWS Workshop VPC(CIDR: 10.1.0.0/16) with Private and Public subnets"
+Description: "AWS Workshop VPC(CIDR: 10.0.0.0/16) with Private and Public subnets"
 
 Parameters:
   VpcBlock:
     Type: String
-    Default: 10.1.0.0/16
+    Default: 10.0.0.0/16
     Description: The CIDR range for the VPC. This should be a valid private (RFC 1918) CIDR range.
 
   PublicSubnet01Block:
     Type: String
-    Default: 10.1.128.0/20
+    Default: 10.0.128.0/20
     Description: CidrBlock for public subnet in AZ 1
 
   PublicSubnet02Block:
     Type: String
-    Default: 10.1.144.0/20
+    Default: 10.0.144.0/20
     Description: CidrBlock for public subnet in AZ 2
 
   PrivateSubnet01Block:
     Type: String
-    Default: 10.1.176.0/20
+    Default: 10.0.176.0/20
     Description: CidrBlock for private subnet in AZ 1
 
   PrivateSubnet02Block:
     Type: String
-    Default: 10.1.192.0/20
+    Default: 10.0.192.0/20
     Description: CidrBlock for private subnet in AZ 2
 
   NamePrefix:
     Type: String
-    Default: labs-10-1
+    Default: labs-10-0
     Description: Resource name prefix for all
 
   C9EC2InstanceType:
@@ -43,7 +43,9 @@ Parameters:
       - t2.medium
       - t2.large
       - m5.large
+      - m5.xlarge
       - c5.large
+      - c5.xlarge
 
   C9AutoHibernateTimeout:
     Description: How many minutes idle before shutting down the IDE. Options, 30min, 1hr, 4hr, 1day, 1week, Never (0)
@@ -65,8 +67,19 @@ Parameters:
       - "TRUE"
       - "FALSE"
 
+  C9CreateSSMRole:
+    Description: Whether to create the SSM role, if not the first time to run this templdate, please choose FALSE
+    Type: String
+    AllowedValues:
+      - "TRUE"
+      - "FALSE"
+    Default: "TRUE"
+
 Conditions:
   UseC9PublicSubnet: !Equals [!Ref C9DeployToPublicSubnet, "TRUE"]
+  CreateC9SSMRole: !Equals
+    - "TRUE"
+    - !Ref C9CreateSSMRole
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -83,6 +96,7 @@ Metadata:
           - C9EC2InstanceType
           - C9AutoHibernateTimeout
           - C9DeployToPublicSubnet
+          - C9CreateSSMRole
 
 Resources:
   VPC:
@@ -347,6 +361,7 @@ Resources:
           Value: !Sub "${NamePrefix}-internal-mysql"
 
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbsubnet-group.html
+  # RDS Subnet Group
   DBSubnetGroup:
     Properties:
       DBSubnetGroupDescription: RDS DB Subnet Group
@@ -358,7 +373,9 @@ Resources:
           Value: !Sub "${NamePrefix}-rds-subnet-group"
     Type: "AWS::RDS::DBSubnetGroup"
 
-  AWSCloud9SSMAccessRole:
+  # Cloud9
+  C9SSMAccessRole:
+    Condition: CreateC9SSMRole
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -377,13 +394,14 @@ Resources:
         - arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile
       RoleName: "AWSCloud9SSMAccessRole"
 
-  AWSCloud9SSMInstanceProfile:
+  C9SSMInstanceProfile:
+    Condition: CreateC9SSMRole
     Type: "AWS::IAM::InstanceProfile"
     Properties:
       InstanceProfileName: AWSCloud9SSMInstanceProfile
       Path: "/cloud9/"
       Roles:
-        - Ref: AWSCloud9SSMAccessRole
+        - Ref: C9SSMAccessRole
 
   C9IDE:
     Type: "AWS::Cloud9::EnvironmentEC2"
