@@ -392,6 +392,8 @@ Resources:
       Path: "/service-role/"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile
+        - arn:aws:iam::aws:policy/AdministratorAccess
+        - arn:aws:iam::aws:policy/IAMFullAccess
       RoleName: "AWSCloud9SSMAccessRole"
 
   C9SSMInstanceProfile:
